@@ -70,6 +70,23 @@ return {
         desc = "Debug: Toggle UI",
       },
       {
+        "<leader>dS",
+        function()
+          local dapui = require("dapui")
+          dapui.open()
+          dapui.elements.stacks.render()
+        end,
+        desc = "Debug: Refresh call stack",
+      },
+      {
+        "<leader>dF",
+        function()
+          local widgets = require("dap.ui.widgets")
+          widgets.centered_float(widgets.frames)
+        end,
+        desc = "Debug: Show call stack",
+      },
+      {
         "<leader>de",
         function() require("dapui").eval() end,
         mode = { "n", "v" },
@@ -230,6 +247,14 @@ return {
         commented = false,
       })
       dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+      dap.listeners.after.event_stopped["dapui_stack_refresh"] = function()
+        vim.defer_fn(function()
+          if dap.session() then
+            dapui.open()
+            dapui.elements.stacks.render()
+          end
+        end, 100)
+      end
       dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
       dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
     end,
