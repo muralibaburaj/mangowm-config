@@ -13,6 +13,68 @@ local function project(file)
   return root, config
 end
 
+local debug_origin
+
+local function remember_debug_origin()
+  debug_origin = {
+    buf = vim.api.nvim_get_current_buf(),
+    win = vim.api.nvim_get_current_win(),
+    tab = vim.api.nvim_get_current_tabpage(),
+  }
+end
+
+local function restore_editor()
+  local origin = debug_origin
+  if not origin then return end
+
+  pcall(function() require("dapui").close() end)
+
+  -- nvim-dap keeps its integrated-terminal buffer after the debug session.
+  -- Close its split and remove the buffer so the editor returns to its prior layout.
+  local terminal_buffers = {}
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name:match("^%[dap%-terminal%]") then
+        terminal_buffers[#terminal_buffers + 1] = buf
+      end
+    end
+  end
+
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      if vim.api.nvim_win_is_valid(win) then
+        local buf = vim.api.nvim_win_get_buf(win)
+        if vim.tbl_contains(terminal_buffers, buf) then
+          local wins = vim.api.nvim_tabpage_list_wins(tab)
+          if #wins > 1 then
+            pcall(vim.api.nvim_win_close, win, true)
+          elseif vim.api.nvim_buf_is_valid(origin.buf) then
+            pcall(vim.api.nvim_win_set_buf, win, origin.buf)
+          end
+        end
+      end
+    end
+  end
+
+  for _, buf in ipairs(terminal_buffers) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    end
+  end
+
+  if vim.api.nvim_tabpage_is_valid(origin.tab) then
+    pcall(vim.api.nvim_set_current_tabpage, origin.tab)
+  end
+  if vim.api.nvim_win_is_valid(origin.win) then
+    pcall(vim.api.nvim_set_current_win, origin.win)
+    if vim.api.nvim_buf_is_valid(origin.buf) then
+      pcall(vim.api.nvim_win_set_buf, origin.win, origin.buf)
+    end
+  end
+  debug_origin = nil
+end
+
 local function terminal(root, argv)
   vim.cmd("botright 12new")
   vim.fn.termopen(argv, { cwd = root })
@@ -61,8 +123,12 @@ return {
       },
       {
         "<leader>dq",
-        function() require("dap").terminate() end,
-        desc = "Debug: Stop",
+        function()
+          local dap = require("dap")
+          if dap.session() then dap.terminate() end
+          vim.defer_fn(restore_editor, 300)
+        end,
+        desc = "Debug: Stop and restore editor",
       },
       {
         "<leader>du",
@@ -191,6 +257,7 @@ return {
                   return
                 end
                 dap.defaults.fallback.terminal_win_cmd = "botright 12new"
+                remember_debug_origin()
                 dap.run({
                   type = "codelldb",
                   request = "launch",
@@ -255,8 +322,12 @@ return {
           end
         end, 100)
       end
-      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
-      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+      dap.listeners.after.event_terminated["dapui_restore_editor"] = function()
+        vim.defer_fn(restore_editor, 100)
+      end
+      dap.listeners.after.event_exited["dapui_restore_editor"] = function()
+        vim.defer_fn(restore_editor, 100)
+      end
     end,
   },
   {
