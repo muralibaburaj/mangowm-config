@@ -65,6 +65,22 @@ return {
         desc = "Debug: Stop",
       },
       {
+        "<leader>du",
+        function() require("dapui").toggle() end,
+        desc = "Debug: Toggle UI",
+      },
+      {
+        "<leader>de",
+        function() require("dapui").eval() end,
+        mode = { "n", "v" },
+        desc = "Debug: Evaluate expression",
+      },
+      {
+        "<leader>dh",
+        function() require("dap").repl.open() end,
+        desc = "Debug: Open REPL",
+      },
+      {
         "<leader>dn",
         function() require("dap").step_over() end,
         desc = "Debug: Step over",
@@ -78,6 +94,33 @@ return {
         "<leader>do",
         function() require("dap").step_out() end,
         desc = "Debug: Step out",
+      },
+      {
+        "<leader>dc",
+        function() require("dap").run_to_cursor() end,
+        desc = "Debug: Run to cursor",
+      },
+      {
+        "<leader>dC",
+        function()
+          vim.ui.input({ prompt = "Breakpoint condition: " }, function(condition)
+            if condition and condition ~= "" then
+              require("dap").set_breakpoint(condition)
+            end
+          end)
+        end,
+        desc = "Debug: Conditional breakpoint",
+      },
+      {
+        "<leader>dl",
+        function()
+          vim.ui.input({ prompt = "Logpoint message: " }, function(message)
+            if message and message ~= "" then
+              require("dap").set_breakpoint(nil, nil, message)
+            end
+          end)
+        end,
+        desc = "Debug: Logpoint",
       },
       {
         "<leader>dr",
@@ -148,9 +191,49 @@ return {
       },
     },
   },
-  -- Keep the editor layout uncluttered: CodeLLDB's integrated terminal is the
-  -- only debugger split; no side panels for scopes, stacks, or disassembly.
-  { "rcarriga/nvim-dap-ui", enabled = false },
+  {
+    "rcarriga/nvim-dap-ui",
+    dependencies = { "nvim-neotest/nvim-nio", "theHamsta/nvim-dap-virtual-text" },
+    opts = {
+      icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
+      controls = { enabled = true },
+      layouts = {
+        {
+          elements = {
+            { id = "scopes", size = 0.40 },
+            { id = "stacks", size = 0.30 },
+            { id = "breakpoints", size = 0.15 },
+            { id = "watches", size = 0.15 },
+          },
+          size = 48,
+          position = "left",
+        },
+        {
+          elements = {
+            { id = "repl", size = 0.60 },
+            { id = "console", size = 0.40 },
+          },
+          size = 12,
+          position = "bottom",
+        },
+      },
+      floating = { border = "rounded", max_height = 0.8, max_width = 0.8 },
+    },
+    config = function(_, opts)
+      local dap, dapui = require("dap"), require("dapui")
+      dapui.setup(opts)
+      require("nvim-dap-virtual-text").setup({
+        enabled = true,
+        enabled_commands = true,
+        highlight_changed_variables = true,
+        show_stop_reason = true,
+        commented = false,
+      })
+      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+    end,
+  },
   {
     "nvim-lua/plenary.nvim",
     keys = {
