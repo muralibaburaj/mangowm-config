@@ -1,0 +1,15 @@
+[mgr]
+cwd = { fg = "#c5c9c5" }
+find_keyword = { fg = "#e6c384", bold = true }
+marker_selected = { fg = "#181616", bg = "#7e9cd8" }
+marker_marked = { fg = "#181616", bg = "#938aa9" }
+border_style = { fg = "#54546d" }
+[tabs]
+active = { fg = "#181616", bg = "#938aa9", bold = true }
+inactive = { fg = "#c5c9c5", bg = "#282727" }
+[mode]
+normal_main = { fg = "#181616", bg = "#938aa9", bold = true }
+select_main = { fg = "#181616", bg = "#87a987", bold = true }
+unset_main = { fg = "#181616", bg = "#e6c384", bold = true }
+[status]
+overall = { fg = "#c5c9c5", bg = "#181616" }

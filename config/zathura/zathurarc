@@ -1,0 +1,5 @@
+include kanagawa-dragon
+set recolor false
+
+# PDF chapter/bookmark tree (Tab also works by default).
+map <F9> toggle_index

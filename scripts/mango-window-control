@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Move or vertically resize the focused Mango window without changing its mode."""
+
+import json
+import subprocess
+import sys
+
+
+def main():
+    if len(sys.argv) != 3 or sys.argv[1] not in ("move", "height") or sys.argv[2] not in ("left", "right", "up", "down", "+", "-"):
+        raise SystemExit("Usage: mango-window-control {move|height} {left|right|up|down|+|-}")
+
+    result = subprocess.run(["mmsg", "get", "focusing-client"], capture_output=True, text=True, check=True)
+    client = json.loads(result.stdout)
+    if not client.get("id"):
+        return
+
+    action, direction = sys.argv[1:]
+    if action == "height":
+        if not client["is_floating"] or direction not in ("+", "-"):
+            return
+        command = f"resizewin,+0,{direction}40"
+    else:
+        if direction not in ("left", "right", "up", "down"):
+            return
+        if client["is_floating"]:
+            offsets = {"left": "-40,+0", "right": "+40,+0", "up": "+0,-40", "down": "+0,+40"}
+            command = f"movewin,{offsets[direction]}"
+        else:
+            command = f"move_client,{direction}"
+
+    subprocess.run(["mmsg", "dispatch", command, f"client,{client['id']}"], check=True)
+
+
+if __name__ == "__main__":
+    main()

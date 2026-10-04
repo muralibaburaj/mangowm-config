@@ -8,7 +8,7 @@
   "margin-top": 4,
   "margin-bottom": 0,
   "margin-right": 4,
-  "maring-left": 4,
+  "margin-left": 4,
   "modules-left": ["group/left1", "group/left2", "group/left3", "group/left4"],
   "modules-center": ["clock", "custom/notification"],
   "modules-right": ["group/right1", "group/right"],
@@ -48,9 +48,9 @@
   // --- Left Modules
 
   "custom/os": {
-    "format": "cachy-os",
-    "on-click-right": "rofi -show drun -theme ~/.config/rofi/styles.rasi 2>/dev/null",
-    "on-click": "wlogout",
+    "format": "󰣨",
+    "on-click-right": "rofi -show drun -theme /home/gentoo/.config/mango/rofi/styles.rasi 2>/dev/null",
+    "on-click": "wlogout -c /home/gentoo/.config/mango/wlogout/style.css -l /home/gentoo/.config/mango/wlogout/layout",
     "tooltip-format": "Super + Space",
   },
 
@@ -64,10 +64,10 @@
 
   "pulseaudio": {
     "format": "{icon} {volume}%",
-    "on-click": "pavucontrol",
-    "on-click-right": "pamixer -t",
-    "on-scroll-up": "pamixer -i 5",
-    "on-scroll-down": "pamixer -d 5",
+    "on-click": "foot -e pulsemixer",
+    "on-click-right": "pulsemixer --toggle-mute",
+    "on-scroll-up": "pulsemixer --change-volume +5 --max-volume 100",
+    "on-scroll-down": "pulsemixer --change-volume -5",
     "tooltip-format": "{desc}",
     "scroll-step": 5,
     "format-muted": " muted",
@@ -79,17 +79,18 @@
   },
 
   "network": {
+    "family": "ipv4",
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
     "format": "{icon}",
     "format-wifi": "{icon}",
     "format-ethernet": "󰈀",
     "format-disconnected": "󰤮",
     "tooltip-format-wifi": "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
-    "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+    "tooltip-format-ethernet": "Ethernet: {ifname}\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "networkmanager_dmenu 2>/dev/null",
+    "on-click": "foot -e /home/gentoo/.cargo/bin/impala",
   },
 
   "bluetooth": {
@@ -100,7 +101,7 @@
     "interval": 5,
     "tooltip-format": "Devices connected: {num_connections}",
     "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
-    "on-click": "rofi-bluetooth -theme ~/.config/rofi/styles.rasi",
+    "on-click": "/home/gentoo/.local/bin/rofi-bluetooth -theme /home/gentoo/.config/mango/rofi/styles.rasi",
   },
 
   "backlight": {
@@ -146,10 +147,10 @@
   "custom/nightlight": {
     "format": "{}",
     "return-type": "json",
-    "exec": "pgrep -x wlsunset > /dev/null && echo '{\"text\":\"󱞘\"}' || echo '{\"text\":\"󱞗\"}'",
+    "exec": "/home/gentoo/.local/bin/mango-nightlight status",
     "interval": 2,
-    "on-click": "pkill -x wlsunset || wlsunset -t 2000 -T 7000 &",
-    "tooltip-format": "Night light",
+    "on-click": "/home/gentoo/.local/bin/mango-nightlight toggle",
+    "tooltip": true,
   },
 
   "mpris": {
@@ -207,10 +208,6 @@
   // --- Right Modules
 
   "temperature": {
-    "hwmon-path": [
-      "/sys/class/hwmon/hwmon3/temp1_input",
-      "/sys/class/hwmon/hwmon4/temp1_input",
-    ],
     "critical-threshold": 80,
     "warning-threshold": 60,
     "format": " {temperatureC}°C",
@@ -290,7 +287,6 @@
       "bluetooth",
       "backlight",
       "power-profiles-daemon",
-      "custom/updatespacman",
       "idle_inhibitor",
       "custom/nightlight",
     ],

@@ -1,0 +1,38 @@
+# Kanagawa Dragon palette from the upstream Kanagawa colors.
+# Leave PDF pages unchanged; theme only Zathura's interface and index.
+set default-fg                "#c5c9c5"
+set default-bg                "#181616"
+
+set completion-bg             "#282727"
+set completion-fg             "#c5c9c5"
+set completion-highlight-bg   "#a292a3"
+set completion-highlight-fg   "#0d0c0c"
+set completion-group-bg       "#1d1c19"
+set completion-group-fg       "#a6a69c"
+
+set statusbar-fg              "#c5c9c5"
+set statusbar-bg              "#0d0c0c"
+set inputbar-fg               "#c5c9c5"
+set inputbar-bg               "#181616"
+
+set notification-bg           "#181616"
+set notification-fg           "#c5c9c5"
+set notification-error-bg     "#181616"
+set notification-error-fg     "#c4746e"
+set notification-warning-bg   "#181616"
+set notification-warning-fg   "#e6c384"
+
+set recolor-lightcolor        "#181616"
+set recolor-darkcolor         "#c5c9c5"
+
+set index-fg                  "#c5c9c5"
+set index-bg                  "#181616"
+set index-active-fg           "#0d0c0c"
+set index-active-bg           "#a292a3"
+
+set render-loading-bg         "#181616"
+set render-loading-fg         "#c5c9c5"
+
+set highlight-color           "rgba(162,146,163,0.3)"
+set highlight-fg              "#c5c9c5"
+set highlight-active-color    "rgba(162,146,163,0.5)"

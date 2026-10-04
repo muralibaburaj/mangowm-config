@@ -1,0 +1,9 @@
+# Never add live account data, caches, or editor backups to this dotfiles repo.
+.env
+.env.*
+*.log
+*.swp
+*.swo
+*~
+__pycache__/
+.DS_Store

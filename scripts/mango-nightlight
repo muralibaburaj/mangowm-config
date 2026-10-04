@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Manual night-light toggle for Mango's Waybar and keybindings.
+set -euo pipefail
+
+runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+
+running() {
+    pgrep -u "$(id -u)" -x wlsunset >/dev/null
+}
+
+case ${1:-status} in
+    status)
+        if running; then
+            printf '{"text":"󱞘","tooltip":"Night light on"}\n'
+        else
+            printf '{"text":"󱞗","tooltip":"Night light off"}\n'
+        fi
+        ;;
+    on|toggle)
+        if running; then
+            [[ $1 == on ]] && exit 0
+            pkill -u "$(id -u)" -x wlsunset || :
+        else
+            # No location/schedule: wlsunset stays at the warm temperature
+            # until switched off. nohup keeps it alive after Waybar's click shell exits.
+            nohup /home/gentoo/.local/bin/wlsunset -t 2000 -T 7000 \
+                >"$runtime/mango-nightlight.log" 2>&1 </dev/null &
+            sleep 0.2
+            if ! running; then
+                cat "$runtime/mango-nightlight.log" >&2
+                exit 1
+            fi
+        fi
+        ;;
+    off)
+        if running; then
+            pkill -u "$(id -u)" -x wlsunset
+        fi
+        ;;
+    *) echo 'Usage: mango-nightlight {status|on|off|toggle}' >&2; exit 2 ;;
+esac

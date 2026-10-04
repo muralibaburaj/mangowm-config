@@ -1,0 +1,8 @@
+[theme]
+background = "#282727"
+border = "#938aa9"
+text_color = "#c5c9c5"
+hidden_color = "#a6a69c"
+info_color = "#87a987"
+warning_color = "#e6c384"
+error_color = "#c4746e"

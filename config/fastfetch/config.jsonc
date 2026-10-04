@@ -8,7 +8,7 @@
   },
   "logo": {
     "type": "file-raw",
-    "source": "~/.config/fastfetch/logo.txt",
+    "source": "/home/gentoo/.config/mango/fastfetch/logo.txt",
     "color": { "1": "blue" },
     "padding": {
       "top": 1,
@@ -44,7 +44,7 @@
       "type": "packages",
       "key": "󰏗 ",
       "keyColor": "yellow",
-      "format": "pacman: {pacman}",
+      "format": "{all}",
     },
     {
       "type": "wm",

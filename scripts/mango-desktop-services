@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Mango's exec-once hook; nothing here runs in the Sway or Oxwm sessions.
+export XDG_CURRENT_DESKTOP=mango XDG_SESSION_DESKTOP=mango XDG_SESSION_TYPE=wayland
+dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
+
+# This laptop's ALSA auto-mute can silence its speakers even when PipeWire
+# reports the Speaker sink as unmuted. Sway already applies the same fix.
+if [[ -x $HOME/.local/bin/disable-speaker-automute ]]; then
+  "$HOME/.local/bin/disable-speaker-automute"
+fi
+
+if command -v gentoo-pipewire-launcher >/dev/null; then
+  gentoo-pipewire-launcher restart >"${XDG_RUNTIME_DIR:-/tmp}/mango-pipewire.log" 2>&1 &
+fi
+if command -v waybar >/dev/null; then waybar -c "$XDG_CONFIG_HOME/waybar/config.jsonc" -s "$XDG_CONFIG_HOME/waybar/style.css" & fi
+if command -v swaync >/dev/null; then swaync & fi
+if command -v awww-daemon >/dev/null && command -v awww >/dev/null; then
+  awww-daemon &
+  (for i in {1..30}; do
+    awww img "$HOME/.local/share/mango-dotfiles/wallpapers/0008.jpg" && break
+    sleep 0.2
+  done) &
+elif command -v swaybg >/dev/null; then
+  swaybg -i "$HOME/.local/share/mango-dotfiles/wallpapers/0008.jpg" -m fill &
+fi
+if command -v cliphist >/dev/null; then wl-paste --type text --watch cliphist store & fi
+if command -v swayidle >/dev/null && command -v swaylock >/dev/null; then
+  swayidle -w timeout 300 'swaylock -C "$XDG_CONFIG_HOME/swaylock/config"' before-sleep 'swaylock -C "$XDG_CONFIG_HOME/swaylock/config"' &
+fi
+# Personal note synchronization is intentionally not part of this dotfiles fork.
+wait

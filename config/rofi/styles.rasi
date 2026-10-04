@@ -58,7 +58,8 @@ element {
 }
 
 element-icon {
-    margin: 0 8px 0 0;
+    enabled: true;
+    size:            18px;
 }
 
 element selected {

@@ -1,36 +1,36 @@
 {
     "label" : "lock",
-    "action" : "loginctl lock-session",
+    "action" : "swaylock -C /home/gentoo/.config/mango/swaylock/config",
     "text" : "Lock",
     "keybind" : "l"
 }
 {
     "label" : "hibernate",
-    "action" : "systemctl hibernate",
+    "action" : "loginctl hibernate",
     "text" : "Hibernate",
     "keybind" : "h"
 }
 {
     "label" : "logout",
-    "action" : "loginctl terminate-user $USER",
+    "action" : "mmsg dispatch quit",
     "text" : "Logout",
     "keybind" : "e"
 }
 {
     "label" : "shutdown",
-    "action" : "systemctl poweroff",
+    "action" : "loginctl poweroff",
     "text" : "Shutdown",
     "keybind" : "s"
 }
 {
     "label" : "suspend",
-    "action" : "systemctl suspend",
+    "action" : "loginctl suspend",
     "text" : "Suspend",
     "keybind" : "u"
 }
 {
     "label" : "reboot",
-    "action" : "systemctl reboot",
+    "action" : "loginctl reboot",
     "text" : "Reboot",
     "keybind" : "r"
 }
