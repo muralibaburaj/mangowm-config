@@ -22,6 +22,8 @@ Creating this repository does not install anything or change either live session
 - Updated Neovim Xmake actions and asynchronous debugger cleanup.
 - Rofi screen-share picker and the reproducible window-capture portal patch;
   see [screen-sharing setup](screenshare/README.md).
+- Appearance-only OpenCode, VSCodium, Zed, Helix, Alacritty, Discord, Zen and
+  Obsidian assets; see [theme inventory and restore instructions](THEMES.md).
 
 The idle lock remains at five minutes and also runs before suspend. EasyEffects
 is not started automatically. The autoclicker requires `ydotool` and a configured
@@ -44,6 +46,11 @@ Some paths still reference `/home/gentoo`, `~/.local/share/mango-dotfiles`, or l
 installed application wrappers. Review those paths, dependencies, and monitor rules
 before installing elsewhere. The `zen`/`nnn` wrappers, optional speaker auto-mute
 helper, and locally installed `wlsunset` executable are not bundled.
+
+`templates/` contains merge-only appearance exports, not application profiles.
+`themes/` and `assets/` retain selected custom/third-party theme source with
+attribution. System fonts, Adwaita icons/cursor and app dependencies must be
+installed separately; see `THEMES.md`. No live vault settings are modified.
 
 The upstream shell settings, screenshot, and unused assets are kept for provenance;
 the screenshot and original dependency list below describe the upstream setup,

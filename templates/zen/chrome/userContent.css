@@ -1,0 +1,199 @@
+/* Kanagawa Dragon userContent.css*/
+
+@media (prefers-color-scheme: dark) {
+
+  /* Common variables affecting all pages */
+  @-moz-document url-prefix("about:") {
+    :root {
+      --in-content-page-color: #c5c9c5 !important;
+      --color-accent-primary: #938aa9 !important;
+      --color-accent-primary-hover: rgb(200, 192, 147) !important;
+      --color-accent-primary-active: rgb(147, 138, 169) !important;
+      background-color: #181616 !important;
+      --in-content-page-background: #181616 !important;
+    }
+
+  }
+
+  /* Variables and styles specific to about:newtab and about:home */
+  @-moz-document url("about:newtab"), url("about:home") {
+
+    :root {
+      --newtab-background-color: #181616 !important;
+      --newtab-background-color-secondary: #282727 !important;
+      --newtab-element-hover-color: #282727 !important;
+      --newtab-text-primary-color: #c5c9c5 !important;
+      --newtab-wordmark-color: #c5c9c5 !important;
+      --newtab-primary-action-background: #938aa9 !important;
+    }
+
+    .icon {
+      color: #938aa9 !important;
+    }
+
+    .search-wrapper .logo-and-wordmark .logo {
+      background: url("zen-logo-kanagawa.svg") no-repeat center !important;
+      display: inline-block !important;
+      height: 82px !important;
+      width: 82px !important;
+      background-size: 82px !important;
+    }
+
+    @media (max-width: 609px) {
+      .search-wrapper .logo-and-wordmark .logo {
+        background-size: 64px !important;
+        height: 64px !important;
+        width: 64px !important;
+      }
+    }
+
+    .card-outer:is(:hover, :focus, .active):not(.placeholder) .card-title {
+      color: #938aa9 !important;
+    }
+
+    .top-site-outer .search-topsite {
+      background-color: #7e9cd8 !important;
+    }
+
+    .compact-cards .card-outer .card-context .card-context-icon.icon-download {
+      fill: #87a987 !important;
+    }
+  }
+
+  /* Variables and styles specific to about:preferences */
+  @-moz-document url-prefix("about:preferences") {
+    :root {
+      color-scheme: dark !important;
+      --zen-colors-tertiary: #181616 !important;
+      --in-content-text-color: #c5c9c5 !important;
+      --in-content-page-color: #c5c9c5 !important;
+      --in-content-page-background: #181616 !important;
+      --link-color: #938aa9 !important;
+      --link-color-hover: rgb(200, 192, 147) !important;
+      --zen-colors-primary: #282727 !important;
+      --in-content-box-background: #282727 !important;
+      --in-content-box-background-odd: #282727 !important;
+      --in-content-box-border-color: #393836 !important;
+      --in-content-item-hover: #393836 !important;
+      --in-content-item-selected: #393836 !important;
+      --zen-primary-color: #938aa9 !important;
+      --in-content-primary-button-background: #938aa9 !important;
+      --in-content-primary-button-background-hover: #857b9e !important;
+      --in-content-primary-button-background-active: #6c6285 !important;
+      --in-content-primary-button-text-color: #181616 !important;
+      --in-content-focus-outline-color: #938aa9 !important;
+      --in-content-border-color: #393836 !important;
+      --in-content-border-hover: #625e5a !important;
+    }
+
+    .main-content,
+    html,
+    body {
+      background-color: #181616 !important;
+      color: #c5c9c5 !important;
+    }
+
+    groupbox,
+    moz-card,
+    .category,
+    .pane-container {
+      background: #282727 !important;
+      color: #c5c9c5 !important;
+      border-color: #393836 !important;
+    }
+
+    button,
+    menulist,
+    input,
+    search-textbox,
+    textarea {
+      background: #393836 !important;
+      color: #c5c9c5 !important;
+      border-color: #625e5a !important;
+    }
+
+    button:hover,
+    menulist:hover {
+      background: #625e5a !important;
+    }
+
+    checkbox[checked] > .checkbox-check,
+    .toggle-button[aria-pressed="true"] {
+      background-color: #938aa9 !important;
+      border-color: #938aa9 !important;
+    }
+
+    h1, h2, h3, .title, .category-name {
+      color: #c5c9c5 !important;
+    }
+
+    .identity-color-blue {
+      --identity-tab-color: #7e9cd8 !important;
+      --identity-icon-color: #7e9cd8 !important;
+    }
+
+    .identity-color-turquoise {
+      --identity-tab-color: #8ea4a2 !important;
+      --identity-icon-color: #8ea4a2 !important;
+    }
+
+    .identity-color-green {
+      --identity-tab-color: #87a987 !important;
+      --identity-icon-color: #87a987 !important;
+    }
+
+    .identity-color-yellow {
+      --identity-tab-color: #e6c384 !important;
+      --identity-icon-color: #e6c384 !important;
+    }
+
+    .identity-color-orange {
+      --identity-tab-color: #b6927b !important;
+      --identity-icon-color: #b6927b !important;
+    }
+
+    .identity-color-red {
+      --identity-tab-color: #c4746e !important;
+      --identity-icon-color: #c4746e !important;
+    }
+
+    .identity-color-pink {
+      --identity-tab-color: #a292a3 !important;
+      --identity-icon-color: #a292a3 !important;
+    }
+
+    .identity-color-purple {
+      --identity-tab-color: #938aa9 !important;
+      --identity-icon-color: #938aa9 !important;
+    }
+  }
+
+  /* Variables and styles specific to about:addons */
+  @-moz-document url-prefix("about:addons") {
+    :root {
+      --zen-dark-color-mix-base: #181616 !important;
+      --background-color-box: #181616 !important;
+    }
+  }
+
+  /* Variables and styles specific to about:protections */
+  @-moz-document url-prefix("about:protections") {
+    :root {
+      --zen-primary-color: #181616 !important;
+      --social-color: #a292a3 !important;
+      --coockie-color: #89dceb !important;
+      --fingerprinter-color: #e6c384 !important;
+      --cryptominer-color: #938aa9 !important;
+      --tracker-color: #87a987 !important;
+      --in-content-primary-button-background-hover: rgb(81, 83, 105) !important;
+      --in-content-primary-button-text-color-hover: #c5c9c5 !important;
+      --in-content-primary-button-background: #3c3836 !important;
+      --in-content-primary-button-text-color: #c5c9c5 !important;
+    }
+
+
+    .card {
+      background-color: #282727 !important;
+    }
+  }
+}

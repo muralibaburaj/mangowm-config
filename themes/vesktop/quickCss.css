@@ -1,0 +1,34 @@
+/* Kanagawa Dragon for MangoWM; Zephyr's CSS is restored on Sway login. */
+:root, .theme-dark {
+  --background-primary: #181616 !important;
+  --background-secondary: #1a1a19 !important;
+  --background-secondary-alt: #282727 !important;
+  --background-tertiary: #0d0c0c !important;
+  --background-floating: #282727 !important;
+  --background-modifier-hover: #3c3836 !important;
+  --background-modifier-selected: #2d4f67 !important;
+  --background-base-lowest: #0d0c0c !important;
+  --background-base-lower: #181616 !important;
+  --background-base-low: #1a1a19 !important;
+  --background-surface-high: #282727 !important;
+  --background-surface-higher: #3c3836 !important;
+  --background-surface-highest: #54546d !important;
+  --bg-base-primary: #181616 !important;
+  --bg-base-secondary: #1a1a19 !important;
+  --bg-base-tertiary: #0d0c0c !important;
+  --bg-surface-raised: #282727 !important;
+  --channeltextarea-background: #282727 !important;
+  --input-background: #282727 !important;
+  --text-normal: #c5c9c5 !important;
+  --text-default: #c5c9c5 !important;
+  --text-muted: #a6a69c !important;
+  --text-link: #7e9cd8 !important;
+  --interactive-normal: #c5c9c5 !important;
+  --interactive-hover: #c8c093 !important;
+  --interactive-active: #a292a3 !important;
+  --brand-500: #938aa9 !important;
+  --brand-experiment: #938aa9 !important;
+  --button-filled-brand-background: #938aa9 !important;
+  --scrollbar-auto-thumb: #54546d !important;
+  --scrollbar-auto-track: #181616 !important;
+}

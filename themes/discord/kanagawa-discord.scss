@@ -1,0 +1,91 @@
+/* Kanagawa Dragon palette from rebelot/kanagawa.nvim, applied to the current
+ * Discord selectors from catppuccin/discord (MIT, commit b9b5547).
+ * Rebuild: sass --load-path <catppuccin-discord>/src --style=compressed
+ *   kanagawa-discord.scss kanagawa-discord.css
+ */
+@use "sass:math";
+
+$rosewater: #c8c093;
+$flamingo: #b98d7b;
+$pink: #a292a3;
+$mauve: #938aa9;
+$red: #c4746e;
+$maroon: #e46876;
+$peach: #b6927b;
+$yellow: #e6c384;
+$green: #87a987;
+$teal: #8ea4a2;
+$sky: #7fb4ca;
+$sapphire: #8ba4b0;
+$blue: #7e9cd8;
+$lavender: #8992a7;
+
+$text: #c5c9c5;
+$subtext1: #c8c093;
+$subtext0: #a6a69c;
+$overlay2: #9e9b93;
+$overlay1: #7a8382;
+$overlay0: #737c73;
+// Use the mid-dark Dragon surfaces for Discord's large panels. The original
+// black0/black1 shades made the whole sidebar look almost pure black.
+$surface2: #737c73;
+$surface1: #625e5a;
+$surface0: #393836;
+$base: #282727;
+$mantle: #1d1c19;
+$crust: #181616;
+
+.visual-refresh.theme-dark,
+.visual-refresh .theme-dark {
+  $brand: $mauve;
+
+  @import "components/tweaks/dark";
+  @import "theme";
+
+  // Discord mixes legacy and refreshed tokens. Supply both so the composer,
+  // search fields, popouts and settings share the same Dragon surface ramp.
+  --background-primary: #282727 !important;
+  --background-secondary: #1d1c19 !important;
+  --background-tertiary: #181616 !important;
+  --background-floating: #393836 !important;
+  --bg-base-primary: #282727 !important;
+  --bg-base-secondary: #1d1c19 !important;
+  --bg-base-tertiary: #181616 !important;
+  --background-secondary-alt: #282727 !important;
+  --popover-background: #393836 !important;
+  --modal-background: #282727 !important;
+  --modal-footer-background: #1d1c19 !important;
+  --channeltextarea-background: #1d1c19 !important;
+  --input-background: #393836 !important;
+  --input-background-default: #393836 !important;
+  --input-border-default: #625e5a !important;
+  --interactive-normal: #c5c9c5 !important;
+  --interactive-hover: #c8c093 !important;
+  --interactive-active: #938aa9 !important;
+  --background-modifier-hover: #393836 !important;
+  --background-modifier-selected: #393836 !important;
+
+  // Discord sometimes paints the composer directly instead of using its
+  // channeltextarea token. Blend it with the chat; outline it subtly.
+  [class^="channelTextArea_"] [class^="scrollableContainer_"],
+  [class^="channelTextArea_"] [class^="themedBackground_"] {
+    background-color: #1d1c19 !important;
+    box-shadow: inset 0 0 0 1px #393836;
+  }
+
+  // Match the channel/DM sidebar to the chat surface, with only the guild
+  // rail one shade darker. Avoid the original near-black and the mismatched
+  // bright sidebar panel.
+  [class^="guilds_"] {
+    --background-base-lowest: #181616 !important;
+    background-color: #181616 !important;
+  }
+
+  [class^="sidebar_"],
+  [class^="privateChannels_"] {
+    --background-base-lowest: #1d1c19 !important;
+    --background-base-lower: #1d1c19 !important;
+    --background-base-low: #1d1c19 !important;
+    background-color: #1d1c19 !important;
+  }
+}

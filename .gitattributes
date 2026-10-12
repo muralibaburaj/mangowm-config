@@ -1,2 +1,4 @@
 # Unified patch context prefixes legitimately precede upstream tab indentation.
 *.patch whitespace=-space-before-tab
+# Preserve the installed third-party Obsidian theme byte-for-byte.
+"templates/obsidian/.obsidian/themes/Kanagawa Paper/theme.css" whitespace=-blank-at-eol,-blank-at-eof

@@ -1,0 +1,5 @@
+theme = "kanagawa-dragon"
+
+[keys.normal.space]
+X = [":write", ":sh cargo run"]
+T = [":write", ":sh cargo test"]
