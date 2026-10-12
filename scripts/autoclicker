@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+"""Wayland autoclicker menu and private per-user controller."""
+import atexit
+import fcntl
+import json
+import os
+from pathlib import Path
+import select
+import signal
+import socket
+import subprocess
+import sys
+import time
+
+from _desktop_menu import ask, heading, menu_item, style
+
+RUNTIME = Path(os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}'))
+SOCKET = RUNTIME / 'autoclicker-control.sock'
+CONFIG = Path.home() / '.config/autoclicker/settings.json'
+BUTTONS = {'left': '0xC0', 'right': '0xC1', 'middle': '0xC2'}
+
+
+def click_environment():
+    env = os.environ.copy()
+    service_socket = Path(f'/run/ydotool-{os.getuid()}.sock')
+    if 'YDOTOOL_SOCKET' not in env and service_socket.exists():
+        env['YDOTOOL_SOCKET'] = str(service_socket)
+    return env
+
+
+def request(command, start=True):
+    def connect():
+        client = socket.socket(socket.AF_UNIX)
+        client.settimeout(3)
+        client.connect(str(SOCKET))
+        return client
+    try:
+        client = connect()
+    except OSError:
+        if not start:
+            return {'active': False, 'cps': 10, 'button': 'left'}
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--worker'],
+                         start_new_session=True, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL)
+        for _ in range(30):
+            time.sleep(.05)
+            try:
+                client = connect()
+                break
+            except OSError:
+                pass
+        else:
+            raise RuntimeError('Could not start controller. Check your runtime directory.')
+    with client:
+        client.sendall((json.dumps(command) + '\n').encode())
+        reply = json.loads(client.makefile().readline())
+    if 'error' in reply:
+        raise RuntimeError(reply['error'])
+    return reply
+
+
+def worker():
+    lock = (RUNTIME / 'autoclicker.lock').open('a')
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return
+    settings = {'cps': 10, 'button': 'left'}
+    if CONFIG.exists():
+        settings.update(json.loads(CONFIG.read_text()))
+    if not 1 <= settings['cps'] <= 100 or settings['button'] not in BUTTONS:
+        raise ValueError('Invalid saved settings')
+    process = None
+    error = ''
+
+    def stop():
+        nonlocal process
+        if process is not None:
+            process.terminate()
+            try:
+                process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            process = None
+            # A stop may interrupt between down and up: release the selected button.
+            up = {'left': '0x80', 'right': '0x81', 'middle': '0x82'}
+            subprocess.run(['ydotool', 'click', up[settings['button']]],
+                           env=click_environment(),
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           timeout=2)
+
+    def cleanup():
+        try:
+            stop()
+        finally:
+            SOCKET.unlink(missing_ok=True)
+
+    atexit.register(cleanup)
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(sig, lambda *_: sys.exit(0))
+    SOCKET.unlink(missing_ok=True)
+    server = socket.socket(socket.AF_UNIX)
+    server.bind(str(SOCKET))
+    os.chmod(SOCKET, 0o600)
+    server.listen(4)
+    while True:
+        if process is not None and process.poll() is not None:
+            code = process.returncode
+            stop()
+            error = f'Click process exited ({code}); check ydotoold.'
+        if not select.select([server], [], [], .1)[0]:
+            continue
+        with server.accept()[0] as client:
+            client.settimeout(2)
+            try:
+                data = json.loads(client.makefile().readline(4096))
+                command = data['command']
+                if command in ('stop', 'configure') or (command == 'toggle' and process):
+                    stop()
+                elif command == 'toggle':
+                    env = click_environment()
+                    ydsocket = Path(env.get('YDOTOOL_SOCKET', str(RUNTIME / '.ydotool_socket')))
+                    if not ydsocket.exists():
+                        raise RuntimeError('ydotoold is not running; run autoclicker-setup first.')
+                    delay = max(5, round(500 / settings['cps']))
+                    process = subprocess.Popen(['ydotool', 'click', '-r', '1000000000',
+                                                '-D', str(delay), BUTTONS[settings['button']]],
+                                               env=env,
+                                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    error = ''
+                if command == 'configure':
+                    cps = int(data.get('cps', settings['cps']))
+                    button = data.get('button', settings['button'])
+                    if not 1 <= cps <= 100 or button not in BUTTONS:
+                        raise ValueError('Choose 1–100 clicks/s and left, right or middle.')
+                    settings = {'cps': cps, 'button': button}
+                    CONFIG.parent.mkdir(parents=True, exist_ok=True)
+                    CONFIG.write_text(json.dumps(settings) + '\n')
+                reply = dict(settings, active=process is not None, message=error)
+            except Exception as exc:
+                reply = {'error': str(exc)}
+            client.sendall((json.dumps(reply) + '\n').encode())
+
+
+def main():
+    if sys.argv[1:] == ['--worker']:
+        worker()
+        return
+    if sys.argv[1:]:
+        command = sys.argv[1]
+        if command not in ('toggle', 'stop', 'status'):
+            raise ValueError('Usage: autoclicker [toggle|stop|status]')
+        state = request({'command': command}, start=command != 'stop')
+        print(f"{'ON' if state['active'] else 'OFF'} · {state['cps']} clicks/s · {state['button']}")
+        return
+    try:
+        while True:
+            state = request({'command': 'status'})
+            heading('AUTOCLICKER  ·  Wayland')
+            print(f"  {style('ON' if state['active'] else 'OFF', '1')} · {state['cps']} clicks/s · {state['button']}")
+            print('  F6 toggle · F7 stop · clicks follow your cursor')
+            if state.get('message'):
+                print('  ' + state['message'])
+            menu_item(1, 'Toggle clicking')
+            menu_item(2, 'Click rate')
+            menu_item(3, 'Mouse button')
+            menu_item(4, 'Stop clicking')
+            choice = ask('Select a number · Enter to stop and quit')
+            if not choice:
+                break
+            try:
+                if choice in ('1', '4'):
+                    request({'command': 'toggle' if choice == '1' else 'stop'})
+                elif choice == '2':
+                    value = ask('Clicks per second · 1–100')
+                    if value:
+                        request({'command': 'configure', 'cps': int(value)})
+                elif choice == '3':
+                    value = ask('left / right / middle')
+                    if value:
+                        request({'command': 'configure', 'button': value.lower()})
+            except (ValueError, RuntimeError) as exc:
+                print(str(exc))
+    finally:
+        request({'command': 'stop'}, start=False)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as exc:
+        print(f'autoclicker: {exc}', file=sys.stderr)
+        sys.exit(1)

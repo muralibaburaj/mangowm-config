@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Disable the output, not just its backlight, to test dual-display overhead.
+set -euo pipefail
+shopt -s nullglob
+
+case ${1:-toggle} in
+  on)
+    exec mmsg dispatch enable_monitor,eDP-1
+    ;;
+  toggle) ;;
+  *) echo 'Usage: mango-laptop-display [toggle|on]' >&2; exit 2 ;;
+esac
+
+for panel in /sys/class/drm/card*-eDP-1; do
+  if [[ $(<"$panel/enabled") != enabled ]]; then
+    exec mmsg dispatch enable_monitor,eDP-1
+  fi
+  for output in /sys/class/drm/card*-*; do
+    [[ $output != "$panel" && -r $output/status && -r $output/enabled ]] || continue
+    if [[ $(<"$output/status") == connected && $(<"$output/enabled") == enabled ]]; then
+      exec mmsg dispatch disable_monitor,eDP-1
+    fi
+  done
+  echo 'Laptop display left on: no other connected, enabled output.' >&2
+  if command -v notify-send >/dev/null; then
+    notify-send 'Laptop display left on' 'Connect and enable another monitor first.' || true
+  fi
+  exit 0
+done
+echo 'Laptop display eDP-1 not found.' >&2
+exit 1

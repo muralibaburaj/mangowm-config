@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 # Mango's exec-once hook; nothing here runs in the Sway or Oxwm sessions.
+# Do not start desktop services until the compositor confirms it is locked.
+# swaylock's daemonize handshake returns only after ext-session-lock is locked.
+if [[ ${MANGO_LOCK_ON_START:-0} == 1 ]]; then
+  if ! swaylock -f -C "$XDG_CONFIG_HOME/swaylock/config" --indicator-idle-visible; then
+    echo 'Startup lock failed; stopping Mango instead of exposing the desktop.' >&2
+    mmsg dispatch quit
+    exit 1
+  fi
+  unset MANGO_LOCK_ON_START
+fi
 export XDG_CURRENT_DESKTOP=mango XDG_SESSION_DESKTOP=mango XDG_SESSION_TYPE=wayland
 dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
 
@@ -17,11 +27,11 @@ if command -v swaync >/dev/null; then swaync & fi
 if command -v awww-daemon >/dev/null && command -v awww >/dev/null; then
   awww-daemon &
   (for i in {1..30}; do
-    awww img "$HOME/.local/share/mango-dotfiles/wallpapers/0008.jpg" && break
+    awww img "$HOME/.local/share/mango-dotfiles/wallpapers/0017.png" && break
     sleep 0.2
   done) &
 elif command -v swaybg >/dev/null; then
-  swaybg -i "$HOME/.local/share/mango-dotfiles/wallpapers/0008.jpg" -m fill &
+  swaybg -i "$HOME/.local/share/mango-dotfiles/wallpapers/0017.png" -m fill &
 fi
 if command -v cliphist >/dev/null; then wl-paste --type text --watch cliphist store & fi
 if command -v swayidle >/dev/null && command -v swaylock >/dev/null; then

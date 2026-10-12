@@ -16,6 +16,16 @@ Creating this repository does not install anything or change either live session
 - Mango desktop-service, night-light, window-control, and Bluetooth helper scripts.
 - PipeWire/WirePlumber audio, Impala/iwd networking, and `loginctl` power actions.
 - Clipboard screenshots using Grim, Slurp, and wl-clipboard.
+- Wallpaper `0017.png` as the default, with the original JPG retained.
+- External ED270R at 180 Hz / 1.25x scale, scroller tags, and Wacom pen mapping.
+- Kernel-route-based Waybar networking, laptop display toggles, and autoclicker helpers.
+- Updated Neovim Xmake actions and asynchronous debugger cleanup.
+
+The idle lock remains at five minutes and also runs before suspend. EasyEffects
+is not started automatically. The autoclicker requires `ydotool` and a configured
+`ydotoold` socket; its machine-specific setup is not bundled. F6 toggles clicking,
+F7 stops it. Ctrl+Super+P toggles the laptop display, and Shift+Ctrl+Super+P
+enables it again.
 
 Only selected configuration and source scripts are included. Browser/account profiles,
 credentials, clipboard history, application databases, caches, backup directories,

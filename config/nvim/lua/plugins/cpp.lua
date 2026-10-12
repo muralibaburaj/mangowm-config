@@ -14,8 +14,10 @@ local function project(file)
 end
 
 local debug_origin
+local debug_cleanup_pending = false
 
 local function remember_debug_origin()
+  debug_cleanup_pending = false
   debug_origin = {
     buf = vim.api.nvim_get_current_buf(),
     win = vim.api.nvim_get_current_win(),
@@ -76,6 +78,12 @@ local function restore_editor()
 end
 
 local function terminal(root, argv)
+  -- Build/run the saved buffer rather than silently using older disk contents.
+  local saved, err = pcall(vim.cmd, "update")
+  if not saved then
+    vim.notify("Cannot save before running xmake: " .. tostring(err), vim.log.levels.ERROR)
+    return
+  end
   vim.cmd("botright 12new")
   vim.fn.termopen(argv, { cwd = root })
   vim.cmd("startinsert")
@@ -83,7 +91,7 @@ end
 
 local function target_name(config)
   for _, line in ipairs(vim.fn.readfile(config)) do
-    local name = line:match([[target%s*%(%s*["']([^"']+)]])
+    local name = line:match([[^%s*target%s*%(%s*["']([^"']+)]])
     if name then return name end
   end
 end
@@ -125,8 +133,14 @@ return {
         "<leader>dq",
         function()
           local dap = require("dap")
-          if dap.session() then dap.terminate() end
-          vim.defer_fn(restore_editor, 300)
+          if dap.session() then
+            -- Termination is asynchronous (and can take several seconds). Do
+            -- not restore the editor until nvim-dap confirms it has closed.
+            debug_cleanup_pending = true
+            dap.terminate({ on_done = function() vim.schedule(restore_editor) end })
+          else
+            restore_editor()
+          end
         end,
         desc = "Debug: Stop and restore editor",
       },
@@ -213,6 +227,11 @@ return {
           local root, config = project(vim.api.nvim_buf_get_name(0))
           if not root then
             vim.notify("No xmake.lua found above this C++ file", vim.log.levels.ERROR)
+            return
+          end
+          local saved, err = pcall(vim.cmd, "update")
+          if not saved then
+            vim.notify("Cannot save before debugging: " .. tostring(err), vim.log.levels.ERROR)
             return
           end
           local target = target_name(config)
@@ -316,16 +335,18 @@ return {
       dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
       dap.listeners.after.event_stopped["dapui_stack_refresh"] = function()
         vim.defer_fn(function()
-          if dap.session() then
+          if not debug_cleanup_pending and dap.session() then
             dapui.open()
             dapui.elements.stacks.render()
           end
         end, 100)
       end
       dap.listeners.after.event_terminated["dapui_restore_editor"] = function()
+        debug_cleanup_pending = true
         vim.defer_fn(restore_editor, 100)
       end
       dap.listeners.after.event_exited["dapui_restore_editor"] = function()
+        debug_cleanup_pending = true
         vim.defer_fn(restore_editor, 100)
       end
     end,
@@ -349,7 +370,7 @@ return {
       end, desc = "C++: Run xmake target" },
       { "<leader>cc", function()
         local root = project(vim.api.nvim_buf_get_name(0))
-        if root then terminal(root, { "xmake", "project", "-k", "compile_commands", "-o", "." })
+        if root then terminal(root, { "xmake", "project", "-k", "compile_commands", "." })
         else vim.notify("No xmake.lua found above this file", vim.log.levels.ERROR) end
       end, desc = "C++: Generate compile_commands.json" },
       { "<leader>cf", function()
