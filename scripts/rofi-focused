@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -u
+
+runtime_dir=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+rofi_options=(-replace)
+if [[ ${XDG_CURRENT_DESKTOP:-} == mango || ${XDG_SESSION_DESKTOP:-} == mango ]]; then
+    rofi_options+=(-theme "$HOME/.config/mango/rofi/styles.rasi")
+fi
+if [[ -z ${DISPLAY:-} ]]; then
+    for x_socket in /tmp/.X11-unix/X*; do
+        if [[ -S $x_socket && -O $x_socket ]]; then
+            export DISPLAY=":${x_socket##*X}"
+            break
+        fi
+    done
+    export DISPLAY=${DISPLAY:-:0}
+fi
+sway_socket=${SWAYSOCK:-}
+if [[ ! -S $sway_socket ]]; then
+    for candidate in "$runtime_dir"/sway-ipc."$(id -u)".*.sock; do
+        if [[ -S $candidate ]]; then
+            sway_socket=$candidate
+            break
+        fi
+    done
+fi
+
+if [[ -S $sway_socket ]]; then
+    monitor=$(SWAYSOCK="$sway_socket" swaymsg -t get_outputs -r 2>/dev/null \
+        | python3 -c '
+import json, sys
+try:
+    print(next((output["name"] for output in json.load(sys.stdin) if output.get("focused")), ""))
+except (ValueError, KeyError, TypeError):
+    pass
+' 2>/dev/null)
+    if [[ -n $monitor ]]; then
+        exec rofi "${rofi_options[@]}" -monitor "$monitor" "$@"
+    fi
+fi
+
+exec rofi "${rofi_options[@]}" "$@"

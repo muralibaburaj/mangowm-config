@@ -20,6 +20,8 @@ Creating this repository does not install anything or change either live session
 - External ED270R at 180 Hz / 1.25x scale, scroller tags, and Wacom pen mapping.
 - Kernel-route-based Waybar networking, laptop display toggles, and autoclicker helpers.
 - Updated Neovim Xmake actions and asynchronous debugger cleanup.
+- Rofi screen-share picker and the reproducible window-capture portal patch;
+  see [screen-sharing setup](screenshare/README.md).
 
 The idle lock remains at five minutes and also runs before suspend. EasyEffects
 is not started automatically. The autoclicker requires `ydotool` and a configured

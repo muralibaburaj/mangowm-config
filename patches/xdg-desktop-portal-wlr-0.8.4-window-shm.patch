@@ -1,0 +1,14 @@
+--- a/src/screencast/screencast.c
++++ b/src/screencast/screencast.c
+@@ -77,7 +77,10 @@
+ 	cast->framerate = cast->max_framerate;
+ 	cast->refcount = 1;
+ 	cast->node_id = SPA_ID_INVALID;
+-	cast->avoid_dmabufs = false;
++	// Window capture on this Intel/NVIDIA laptop can be imported into Discord's
++	// Vulkan encoder with the wrong image geometry. Use the compositor's SHM
++	// frames for windows; keep zero-copy dmabufs for full monitor capture.
++	cast->avoid_dmabufs = target->type == WINDOW;
+ 	wl_array_init(&cast->current_frame.damage);
+ 	wl_list_init(&cast->buffer_list);
+ 	logprint(INFO, "xdpw: screencast instance %p has %d references", cast, cast->refcount);

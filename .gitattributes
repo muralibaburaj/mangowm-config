@@ -1,0 +1,2 @@
+# Unified patch context prefixes legitimately precede upstream tab indentation.
+*.patch whitespace=-space-before-tab

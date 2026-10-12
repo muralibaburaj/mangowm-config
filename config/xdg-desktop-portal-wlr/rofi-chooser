@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -u
+
+choices=$(cat)
+runtime_dir=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+error_file=$runtime_dir/rofi-share-stderr
+failure_file=$runtime_dir/rofi-share-failures
+choice_file=$runtime_dir/vs-choice
+arm_file=$runtime_dir/vsa
+trace_file=$runtime_dir/rofi-share-trace
+trace() { printf '%s pid=%s %s\n' "$(date +%H:%M:%S.%3N)" "$$" "$*" >> "$trace_file"; }
+trace "start options=$(printf '%s\n' "$choices" | wc -l) arm=$(cat "$arm_file" 2>/dev/null || printf none)"
+
+# Vesktop arms this after the preview is selected and clears it if Go Live is
+# cancelled. Only its next two portal requests reuse the selected source.
+if [[ -f $arm_file && -f $choice_file ]]; then
+    armed_at=$(stat -c %Y "$arm_file" 2>/dev/null || printf '0')
+    age=$(( $(date +%s) - armed_at ))
+    remaining=$(cat "$arm_file" 2>/dev/null || printf '0')
+    if (( age >= 0 && age <= 90 && remaining > 0 && remaining <= 2 )); then
+        selected=$(cat "$choice_file")
+        match=
+        if [[ $selected =~ \(([[:xdigit:]]{16,})\)$ ]]; then
+            window_id=${BASH_REMATCH[1]}
+            while IFS= read -r option; do
+                if [[ $option == Window:\ * && $option == *"($window_id)" ]]; then
+                    match=$option
+                    break
+                fi
+            done <<< "$choices"
+        elif printf '%s\n' "$choices" | grep -Fxq -- "$selected"; then
+            match=$selected
+        fi
+        if [[ -n $match ]]; then
+            printf '%s\n' "$((remaining - 1))" > "$arm_file"
+            trace "reuse remaining=$((remaining - 1)) type=${match%%:*}"
+            printf '%s\n' "$match"
+            exit 0
+        fi
+    fi
+    printf '0\n' > "$arm_file"
+fi
+
+trace 'rofi-open'
+choice=$(printf '%s\n' "$choices" | /home/gentoo/.local/bin/rofi-focused -pid "$runtime_dir/rofi-share.pid" -dmenu -i -no-custom -p 'Share window or monitor' 2> "$error_file")
+chooser_status=$?
+trace "rofi-exit status=$chooser_status selected=$([[ -n $choice ]] && printf yes || printf no)"
+if (( chooser_status != 0 )); then
+    printf '%s status=%s\n' "$(date +%H:%M:%S)" "$chooser_status" >> "$failure_file"
+    cat "$error_file" >> "$failure_file"
+    exit 0
+fi
+
+if ! printf '%s\n' "$choices" | grep -Fxq -- "$choice"; then
+    trace 'rejected-selection'
+    exit 0
+fi
+trace "return type=${choice%%:*}"
+printf '%s\n' "$choice" > "$choice_file"
+printf '%s\n' "$choice"
